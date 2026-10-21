@@ -1,9 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Animated, Easing, StyleSheet, Alert } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { View, Text, Animated, Easing, StyleSheet, Image, Alert } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/ThemeContext';
+import type { ThemeColors } from '../../theme/themes';
 import { radius, spacing, type } from '../../theme/tokens';
 import { getApiKey } from '../../services/apiKeyStore';
 import { analyzeVideoWithGemini } from '../../services/geminiService';
@@ -29,6 +30,8 @@ function phaseIndex(percent: number) {
 }
 
 export default function AIAnalyzingScreen({ route, navigation }: Props) {
+  const { colors, assets } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { video, parts, ratio, customPrompt, changeRatio } = route.params;
   const [percent, setPercent] = useState(0);
   const [message, setMessage] = useState('Menyiapkan...');
@@ -107,6 +110,13 @@ export default function AIAnalyzingScreen({ route, navigation }: Props) {
       <StepIndicator steps={STEPS} current={2} style={styles.steps} />
 
       <View style={styles.orbWrap}>
+        {assets.chakraRing ? (
+          <Image
+            source={assets.chakraRing}
+            style={styles.chakraRing}
+            resizeMode="contain"
+          />
+        ) : null}
         <Animated.View
           style={[
             styles.orbRing,
@@ -161,10 +171,19 @@ export default function AIAnalyzingScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  content: { paddingTop: spacing.lg, alignItems: 'center' },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    content: { paddingTop: spacing.lg, alignItems: 'center' },
   steps: { alignSelf: 'stretch', marginBottom: spacing.xxl },
-  orbWrap: { width: 96, height: 96, alignItems: 'center', justifyContent: 'center' },
+    orbWrap: { width: 96, height: 96, alignItems: 'center', justifyContent: 'center' },
+    chakraRing: {
+      position: 'absolute',
+      left: -57,
+      top: -57,
+      width: 210,
+      height: 210,
+      opacity: 0.8,
+    },
   orbRing: {
     position: 'absolute',
     width: 96,

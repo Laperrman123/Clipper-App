@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Text,
   TextInput,
@@ -9,7 +9,8 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/ThemeContext';
+import type { ThemeColors } from '../../theme/themes';
 import { radius, spacing, type } from '../../theme/tokens';
 import { isValidYouTubeUrl, makeYouTubeAsset } from '../../services/youtubeSource';
 import Screen from '../../components/Screen';
@@ -22,6 +23,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'AIVideoPicker'>;
 const STEPS = ['Video', 'Atur', 'Analisis', 'Hasil'];
 
 export default function AIVideoPickerScreen({ navigation }: Props) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -100,8 +103,9 @@ export default function AIVideoPickerScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  content: { paddingTop: spacing.lg },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    content: { paddingTop: spacing.lg },
   steps: { marginBottom: spacing.xl },
   heroRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   iconBubble: {

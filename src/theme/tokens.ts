@@ -1,5 +1,4 @@
 import type { TextStyle, ViewStyle } from 'react-native';
-import { colors } from './colors';
 
 /** Skala jarak — pakai ini alih-alih angka ajaib supaya ritme vertikal konsisten. */
 export const spacing = {
@@ -47,15 +46,8 @@ export const type = {
   },
 } satisfies Record<string, TextStyle>;
 
-/** Bayangan ter-tint. Satu arah cahaya: dari bawah, ber-hue ungu. */
+/** Bayangan ter-tint. Satu arah cahaya: dari bawah. */
 export const shadow = {
-  glow: {
-    shadowColor: colors.primary,
-    shadowOpacity: 0.5,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 10,
-  } as ViewStyle,
   card: {
     shadowColor: '#000000',
     shadowOpacity: 0.35,
@@ -71,3 +63,17 @@ export const shadow = {
     elevation: 3,
   } as ViewStyle,
 };
+
+/**
+ * Glow berwarna yang mengikuti tema. Terima `colors.primary` supaya bayangannya
+ * ikut berganti saat tema berubah — nilai warna tidak boleh di-bake di modul.
+ */
+export function glow(color: string, opacity = 0.5): ViewStyle {
+  return {
+    shadowColor: color,
+    shadowOpacity: opacity,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 10,
+  };
+}

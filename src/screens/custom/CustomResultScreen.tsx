@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,8 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/ThemeContext';
+import { withAlpha, type ThemeColors } from '../../theme/themes';
 import { radius, spacing, type } from '../../theme/tokens';
 import { saveClipsToGallery } from '../../services/galleryService';
 import Screen from '../../components/Screen';
@@ -29,6 +30,8 @@ function basename(path: string) {
 }
 
 export default function CustomResultScreen({ route }: Props) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { outputPaths } = route.params;
   const toast = useToast();
   const [saving, setSaving] = useState(false);
@@ -113,19 +116,20 @@ export default function CustomResultScreen({ route }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  list: { padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.xl },
-  steps: { marginBottom: spacing.xl },
-  heroRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.lg },
-  checkBubble: {
-    width: 48,
-    height: 48,
-    borderRadius: radius.lg,
-    backgroundColor: 'rgba(52, 211, 153, 0.14)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    flex: { flex: 1 },
+    list: { padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.xl },
+    steps: { marginBottom: spacing.xl },
+    heroRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.lg },
+    checkBubble: {
+      width: 48,
+      height: 48,
+      borderRadius: radius.lg,
+      backgroundColor: withAlpha(colors.success, 0.14),
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
   heroText: { flex: 1 },
   heroTitle: { ...type.h1, color: colors.text },
   heroSub: { ...type.small, color: colors.textMuted, marginTop: 2 },

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,8 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/ThemeContext';
+import type { ThemeColors } from '../../theme/themes';
 import { radius, spacing, type } from '../../theme/tokens';
 import { getActiveApiKey, addApiKey, setActiveApiKey } from '../../services/apiKeyStore';
 import Screen from '../../components/Screen';
@@ -22,6 +23,8 @@ import Badge from '../../components/Badge';
 type Props = NativeStackScreenProps<RootStackParamList, 'ApiKeySetup'>;
 
 export default function ApiKeySetupScreen({ navigation }: Props) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [apiKey, setApiKey] = useState('');
   const [existingKey, setExistingKey] = useState<string | null>(null);
   const [focused, setFocused] = useState(false);
@@ -104,8 +107,9 @@ export default function ApiKeySetupScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  content: { paddingTop: spacing.xl },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    content: { paddingTop: spacing.xl },
   hero: {
     flexDirection: 'row',
     alignItems: 'center',

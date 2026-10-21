@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, Pressable, StyleSheet, Image, Alert } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/navigation';
-import { colors } from '../theme/colors';
-import { radius, spacing, type, shadow } from '../theme/tokens';
+import { useTheme } from '../theme/ThemeContext';
+import type { ThemeColors } from '../theme/themes';
+import { radius, spacing, type, shadow, glow } from '../theme/tokens';
 import Screen from '../components/Screen';
 import Badge from '../components/Badge';
 import Button from '../components/Button';
@@ -15,6 +16,8 @@ import { clearAppCache, formatBytes, getCacheInfo } from '../services/cacheServi
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 function Feature({ icon, label }: { icon: React.ComponentProps<typeof Ionicons>['name']; label: string }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <View style={styles.feature}>
       <Ionicons name={icon} size={13} color={colors.primaryBright} />
@@ -24,6 +27,8 @@ function Feature({ icon, label }: { icon: React.ComponentProps<typeof Ionicons>[
 }
 
 export default function HomeScreen({ navigation }: Props) {
+  const { colors, meta, assets } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const toast = useToast();
   const [clearing, setClearing] = useState(false);
 
@@ -84,9 +89,13 @@ export default function HomeScreen({ navigation }: Props) {
     <Screen scroll contentContainerStyle={styles.content}>
       <View style={styles.brand}>
         <View style={styles.logo}>
-          <Ionicons name="cut-outline" size={22} color={colors.onPrimary} />
+          {assets.logoMark ? (
+            <Image source={assets.logoMark} style={styles.logoImg} resizeMode="contain" />
+          ) : (
+            <Ionicons name="cut-outline" size={22} color={colors.onPrimary} />
+          )}
         </View>
-        <Text style={styles.brandName}>POTONGIN</Text>
+        <Text style={styles.brandName}>{meta.appName}</Text>
         <Pressable
           style={({ pressed }) => [styles.settingsBtn, pressed && styles.pressed]}
           onPress={() => navigation.navigate('Settings')}
@@ -105,6 +114,23 @@ export default function HomeScreen({ navigation }: Props) {
         style={({ pressed }) => [styles.card, styles.cardAI, pressed && styles.pressed]}
         onPress={startAI}
       >
+        {assets.heroPattern ? (
+          <>
+            <Image
+              source={assets.heroPattern}
+              style={StyleSheet.absoluteFill}
+              resizeMode="cover"
+            />
+            <View style={[StyleSheet.absoluteFill, styles.heroScrim]} />
+          </>
+        ) : null}
+        {assets.cornerOrnament ? (
+          <Image
+            source={assets.cornerOrnament}
+            style={styles.cardOrnament}
+            resizeMode="contain"
+          />
+        ) : null}
         <View style={styles.cardTop}>
           <View style={styles.iconBubble}>
             <Ionicons name="sparkles" size={20} color={colors.onPrimary} />
@@ -170,41 +196,54 @@ export default function HomeScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  content: { paddingTop: spacing.xl, gap: spacing.lg },
-  brand: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm },
-  logo: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.md,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...shadow.glow,
-  },
-  brandName: { ...type.h1, color: colors.text, marginLeft: spacing.md, flex: 1 },
-  settingsBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  heading: { ...type.display, color: colors.text },
-  sub: { ...type.body, color: colors.textMuted, marginBottom: spacing.md },
-  card: {
-    borderRadius: radius.xl,
-    padding: spacing.xl,
-    borderWidth: 1,
-  },
-  cardAI: {
-    backgroundColor: colors.primarySoft,
-    borderColor: colors.primaryDim,
-    ...shadow.glow,
-  },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    content: { paddingTop: spacing.xl, gap: spacing.lg },
+    brand: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm },
+    logo: {
+      width: 40,
+      height: 40,
+      borderRadius: radius.md,
+      backgroundColor: colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      ...glow(colors.primary),
+    },
+    logoImg: { width: '100%', height: '100%' },
+    brandName: { ...type.h1, color: colors.text, marginLeft: spacing.md, flex: 1 },
+    settingsBtn: {
+      width: 40,
+      height: 40,
+      borderRadius: radius.md,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    heading: { ...type.display, color: colors.text },
+    sub: { ...type.body, color: colors.textMuted, marginBottom: spacing.md },
+    card: {
+      borderRadius: radius.xl,
+      padding: spacing.xl,
+      borderWidth: 1,
+      overflow: 'hidden',
+    },
+    heroScrim: { backgroundColor: colors.scrim },
+    cardOrnament: {
+      position: 'absolute',
+      top: -16,
+      right: -18,
+      width: 136,
+      height: 136,
+      opacity: 0.55,
+    },
+    cardAI: {
+      backgroundColor: colors.primarySoft,
+      borderColor: colors.primaryDim,
+      ...glow(colors.primary),
+    },
   cardCustom: {
     backgroundColor: colors.surface,
     borderColor: colors.border,

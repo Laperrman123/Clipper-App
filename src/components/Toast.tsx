@@ -3,6 +3,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -16,7 +17,8 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
+import { withAlpha, type ThemeColors } from '../theme/themes';
 import { radius, spacing, type, shadow } from '../theme/tokens';
 
 type Variant = 'success' | 'error' | 'info';
@@ -48,23 +50,31 @@ const ICON: Record<Variant, React.ComponentProps<typeof Ionicons>['name']> = {
   info: 'information-circle',
 };
 
-const TONE: Record<Variant, string> = {
-  success: colors.success,
-  error: colors.danger,
-  info: colors.primaryBright,
-};
-
-const TONE_BG: Record<Variant, string> = {
-  success: 'rgba(52, 211, 153, 0.16)',
-  error: 'rgba(248, 113, 113, 0.16)',
-  info: colors.primarySoft,
-};
-
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [toast, setToast] = useState<CurrentToast | null>(null);
   const anim = useRef(new Animated.Value(0)).current;
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const TONE = useMemo<Record<Variant, string>>(
+    () => ({
+      success: colors.success,
+      error: colors.danger,
+      info: colors.primaryBright,
+    }),
+    [colors]
+  );
+
+  const TONE_BG = useMemo<Record<Variant, string>>(
+    () => ({
+      success: withAlpha(colors.success, 0.16),
+      error: withAlpha(colors.danger, 0.16),
+      info: colors.primarySoft,
+    }),
+    [colors]
+  );
 
   const hide = useCallback(() => {
     Animated.timing(anim, {
@@ -155,43 +165,44 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1 },
-  wrap: {
-    position: 'absolute',
-    left: spacing.lg,
-    right: spacing.lg,
-  },
-  toast: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    backgroundColor: colors.surfaceHi,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    paddingVertical: spacing.md,
-    paddingRight: spacing.lg,
-    paddingLeft: spacing.md,
-    overflow: 'hidden',
-    ...shadow.card,
-  },
-  accent: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4,
-    backgroundColor: colors.primary,
-  },
-  iconBubble: {
-    width: 34,
-    height: 34,
-    borderRadius: radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  body: { flex: 1 },
-  title: { ...type.bodyStrong, color: colors.text },
-  message: { ...type.small, color: colors.textMuted, marginTop: 2 },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    root: { flex: 1 },
+    wrap: {
+      position: 'absolute',
+      left: spacing.lg,
+      right: spacing.lg,
+    },
+    toast: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      backgroundColor: colors.surfaceHi,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+      paddingVertical: spacing.md,
+      paddingRight: spacing.lg,
+      paddingLeft: spacing.md,
+      overflow: 'hidden',
+      ...shadow.card,
+    },
+    accent: {
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      bottom: 0,
+      width: 4,
+      backgroundColor: colors.primary,
+    },
+    iconBubble: {
+      width: 34,
+      height: 34,
+      borderRadius: radius.md,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    body: { flex: 1 },
+    title: { ...type.bodyStrong, color: colors.text },
+    message: { ...type.small, color: colors.textMuted, marginTop: 2 },
+  });

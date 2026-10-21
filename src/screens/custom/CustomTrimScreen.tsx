@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView, Alert } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Slider from '@react-native-community/slider';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, CustomSegment, ClipRatio } from '../../types/navigation';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/ThemeContext';
+import { withAlpha, type ThemeColors } from '../../theme/themes';
 import { radius, spacing, type } from '../../theme/tokens';
 import { formatClock } from '../../utils/time';
 import Screen from '../../components/Screen';
@@ -26,6 +27,8 @@ function makeSegment(id: string, startMs: number, endMs: number): CustomSegment 
 }
 
 export default function CustomTrimScreen({ route, navigation }: Props) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { video } = route.params;
   const duration = video.durationMs || 60000;
   /**
@@ -193,9 +196,10 @@ export default function CustomTrimScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  top: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    flex: { flex: 1 },
+    top: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
   steps: { marginBottom: spacing.lg },
   infoCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   infoText: { ...type.bodyStrong, color: colors.text, flex: 1 },
@@ -230,7 +234,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(248, 113, 113, 0.12)',
+    backgroundColor: withAlpha(colors.danger, 0.12),
   },
   sliderRow: {
     flexDirection: 'row',

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Pressable,
   Text,
@@ -8,7 +8,8 @@ import {
   ViewStyle,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { colors } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
+import type { ThemeColors } from '../theme/themes';
 import { radius, spacing, type } from '../theme/tokens';
 
 type Variant = 'primary' | 'secondary' | 'ghost';
@@ -33,6 +34,8 @@ export default function Button({
   disabled = false,
   style,
 }: Props) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const off = disabled || loading;
   const fg = variant === 'primary' ? colors.onPrimary : colors.primaryBright;
 
@@ -63,32 +66,33 @@ export default function Button({
   );
 }
 
-const styles = StyleSheet.create({
-  base: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: spacing.xl,
-    borderRadius: radius.lg,
-    minHeight: 54,
-  },
-  primary: { backgroundColor: colors.primary },
-  secondary: {
-    backgroundColor: colors.primarySoft,
-    borderWidth: 1,
-    borderColor: colors.primaryDim,
-  },
-  ghost: { backgroundColor: 'transparent', minHeight: 44 },
-  primaryGlow: {
-    shadowColor: colors.primary,
-    shadowOpacity: 0.45,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 8,
-  },
-  disabled: { opacity: 0.45, shadowOpacity: 0, elevation: 0 },
-  pressed: { transform: [{ scale: 0.98 }], opacity: 0.92 },
-  icon: { marginRight: spacing.sm },
-  label: { ...type.h2, letterSpacing: 0 },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    base: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 16,
+      paddingHorizontal: spacing.xl,
+      borderRadius: radius.lg,
+      minHeight: 54,
+    },
+    primary: { backgroundColor: colors.primary },
+    secondary: {
+      backgroundColor: colors.primarySoft,
+      borderWidth: 1,
+      borderColor: colors.primaryDim,
+    },
+    ghost: { backgroundColor: 'transparent', minHeight: 44 },
+    primaryGlow: {
+      shadowColor: colors.primary,
+      shadowOpacity: 0.45,
+      shadowRadius: 16,
+      shadowOffset: { width: 0, height: 8 },
+      elevation: 8,
+    },
+    disabled: { opacity: 0.45, shadowOpacity: 0, elevation: 0 },
+    pressed: { transform: [{ scale: 0.98 }], opacity: 0.92 },
+    icon: { marginRight: spacing.sm },
+    label: { ...type.h2, letterSpacing: 0 },
+  });

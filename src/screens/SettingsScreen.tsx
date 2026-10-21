@@ -1,10 +1,11 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
   TextInput,
   Pressable,
   StyleSheet,
+  Image,
   Alert,
   Linking,
   ActivityIndicator,
@@ -13,8 +14,16 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/navigation';
-import { colors } from '../theme/colors';
-import { radius, spacing, type, shadow } from '../theme/tokens';
+import { useTheme } from '../theme/ThemeContext';
+import {
+  themes,
+  themeAssets,
+  themeMeta,
+  withAlpha,
+  type ThemeColors,
+  type ThemeKey,
+} from '../theme/themes';
+import { radius, spacing, type, glow } from '../theme/tokens';
 import {
   ApiKeyEntry,
   addApiKey,
@@ -43,6 +52,8 @@ function mask(value: string) {
 }
 
 export default function SettingsScreen({ navigation }: Props) {
+  const { colors, themeKey, setThemeKey, assets } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [keys, setKeys] = useState<ApiKeyEntry[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -122,6 +133,52 @@ export default function SettingsScreen({ navigation }: Props) {
           </Text>
         </View>
       </View>
+
+      <Card style={styles.themeCard} tone="raised">
+        <Text style={styles.themeTitle}>Tema Tampilan</Text>
+        <Text style={styles.themeHint}>Ganti warna aplikasi seketika.</Text>
+        <View style={styles.themeRow}>
+          {(['purple', 'naruto'] as ThemeKey[]).map((key) => {
+            const t = themes[key];
+            const active = key === themeKey;
+            return (
+              <Pressable
+                key={key}
+                onPress={() => setThemeKey(key)}
+                style={[styles.themeOption, active && styles.themeOptionActive]}
+              >
+                <View style={[styles.themePreview, { backgroundColor: t.background }]}>
+                  {themeAssets[key].logoMark ? (
+                    <Image
+                      source={themeAssets[key].logoMark}
+                      style={styles.themeLogo}
+                      resizeMode="contain"
+                    />
+                  ) : null}
+                  <View style={[styles.swatch, { backgroundColor: t.primary }]} />
+                  <View style={[styles.swatch, { backgroundColor: t.accent }]} />
+                  {!themeAssets[key].logoMark ? (
+                    <View style={[styles.swatch, { backgroundColor: t.surfaceHi }]} />
+                  ) : null}
+                </View>
+                <View style={styles.themeLabelRow}>
+                  {active ? (
+                    <Ionicons name="checkmark-circle" size={15} color={colors.primaryBright} />
+                  ) : null}
+                  <Text style={[styles.themeLabel, active && styles.themeLabelActive]}>
+                    {themeMeta[key].label}
+                  </Text>
+                </View>
+                <Text style={styles.themeTagline}>{themeMeta[key].tagline}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </Card>
+
+      {assets.divider ? (
+        <Image source={assets.divider} style={styles.divider} resizeMode="contain" />
+      ) : null}
 
       {loading ? (
         <ActivityIndicator color={colors.primary} style={styles.loading} />
@@ -250,31 +307,66 @@ export default function SettingsScreen({ navigation }: Props) {
           <Text style={styles.noteTitle}>Aman di perangkatmu</Text>
         </View>
         <Text style={styles.noteText}>
-          Semua key disimpan lewat SecureStore dan hanya dipakai untuk memanggil
-          Gemini langsung dari app ini. Tidak ada server pihak ketiga yang
-          menyimpannya.
+          Semua key disimpan di penyimpanan aman perangkat dan hanya dipakai
+          untuk memanggil Gemini langsung dari app ini. Tidak ada server pihak
+          ketiga yang menyimpannya.
         </Text>
       </Card>
     </Screen>
   );
 }
 
-const styles = StyleSheet.create({
-  content: { paddingTop: spacing.lg },
-  heroRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.xl },
-  iconBubble: {
-    width: 46,
-    height: 46,
-    borderRadius: radius.md,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...shadow.glow,
-  },
-  heroText: { flex: 1 },
-  title: { ...type.h1, color: colors.text },
-  sub: { ...type.small, color: colors.textMuted, marginTop: 2 },
-  loading: { marginVertical: spacing.xxl },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    content: { paddingTop: spacing.lg },
+    heroRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.xl },
+    iconBubble: {
+      width: 46,
+      height: 46,
+      borderRadius: radius.md,
+      backgroundColor: colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+      ...glow(colors.primary),
+    },
+    heroText: { flex: 1 },
+    title: { ...type.h1, color: colors.text },
+    sub: { ...type.small, color: colors.textMuted, marginTop: 2 },
+    themeCard: { marginBottom: spacing.xl },
+    themeTitle: { ...type.h2, color: colors.text },
+    themeHint: { ...type.small, color: colors.textMuted, marginTop: 2, marginBottom: spacing.md },
+    themeRow: { flexDirection: 'row', gap: spacing.md },
+    themeOption: {
+      flex: 1,
+      borderRadius: radius.md,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+      padding: spacing.md,
+    },
+    themeOptionActive: {
+      borderColor: colors.primary,
+      backgroundColor: colors.primarySoft,
+    },
+    themePreview: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 4,
+      borderRadius: radius.sm,
+      padding: 6,
+      marginBottom: spacing.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    themeLogo: { width: 34, height: 34 },
+    swatch: { flex: 1, height: 22, borderRadius: 6 },
+    divider: { width: '100%', height: 20, marginBottom: spacing.md, opacity: 0.8 },
+    themeLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    themeLabel: { ...type.bodyStrong, color: colors.textMuted },
+    themeLabelActive: { color: colors.text },
+    themeTagline: { ...type.small, color: colors.textFaint, marginTop: 2 },
+    loading: { marginVertical: spacing.xxl },
   emptyCard: { alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.xxl },
   emptyText: { ...type.body, color: colors.textMuted },
   keyCard: { marginBottom: spacing.md, flexDirection: 'row', alignItems: 'center' },
@@ -292,7 +384,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.primarySoft,
   },
-  iconBtnDanger: { backgroundColor: 'rgba(248, 113, 113, 0.12)' },
+  iconBtnDanger: { backgroundColor: withAlpha(colors.danger, 0.12) },
   editor: { marginTop: spacing.sm },
   editorTitle: { ...type.h2, color: colors.text, marginBottom: spacing.md },
   fieldLabel: { ...type.label, color: colors.textMuted, marginBottom: spacing.sm, marginTop: spacing.md },

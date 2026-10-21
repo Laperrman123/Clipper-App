@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,8 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, ClipRatio } from '../../types/navigation';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/ThemeContext';
+import type { ThemeColors } from '../../theme/themes';
 import { radius, spacing, type } from '../../theme/tokens';
 import { getYouTubeVideoId } from '../../services/youtubeTranscript';
 import Screen from '../../components/Screen';
@@ -31,6 +32,8 @@ const PART_OPTIONS = [
 const STEPS = ['Video', 'Atur', 'Analisis', 'Hasil'];
 
 function Section({ title, hint }: { title: string; hint?: string }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -40,6 +43,8 @@ function Section({ title, hint }: { title: string; hint?: string }) {
 }
 
 export default function AIClipConfigScreen({ route, navigation }: Props) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { video } = route.params;
   const [parts, setParts] = useState(5);
   const [ratio, setRatio] = useState<ClipRatio>('9:16');
@@ -84,7 +89,7 @@ export default function AIClipConfigScreen({ route, navigation }: Props) {
 
       <Section
         title="Jumlah bagian"
-        hint="Tiap klip 30-120 detik. Kalau momennya lebih panjang, bagian pembuka yang dipakai supaya hook-nya tetap nendang."
+        hint="Tiap klip minimal 30 detik, tanpa batas maksimal. Kalau momennya panjang, klip tetap utuh sampai selesai."
       />
       <View style={styles.row}>
         {PART_OPTIONS.map((o) => (
@@ -144,8 +149,9 @@ export default function AIClipConfigScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  content: { paddingTop: spacing.lg },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    content: { paddingTop: spacing.lg },
   steps: { marginBottom: spacing.xl },
   poster: { padding: 0, overflow: 'hidden' },
   posterImage: { width: '100%', height: 168, backgroundColor: colors.surfaceAlt },

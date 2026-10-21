@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useState } from 'react';
+import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Pressable,
   ActivityIndicator,
+  Image,
   Alert,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -13,7 +14,8 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import Slider from '@react-native-community/slider';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, AISegment, VideoAsset } from '../../types/navigation';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/ThemeContext';
+import { withAlpha, type ThemeColors } from '../../theme/themes';
 import { radius, spacing, type } from '../../theme/tokens';
 import { cutSingleSegment } from '../../services/ffmpegService';
 import { saveClipToGallery } from '../../services/galleryService';
@@ -33,6 +35,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'AIResult'>;
 const STEPS = ['Video', 'Atur', 'Analisis', 'Hasil'];
 
 export default function AIResultScreen({ route, navigation }: Props) {
+  const { colors, assets } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { video, ratio, changeRatio } = route.params;
   const toast = useToast();
 
@@ -190,7 +194,7 @@ export default function AIResultScreen({ route, navigation }: Props) {
         </Pressable>
       ),
     });
-  }, [navigation, handleReset, resetDisabled]);
+  }, [navigation, handleReset, resetDisabled, styles, colors]);
 
   const Header = (
     <View>
@@ -242,9 +246,18 @@ export default function AIResultScreen({ route, navigation }: Props) {
         contentContainerStyle={styles.list}
         ListHeaderComponent={Header}
         ListEmptyComponent={
-          <Text style={styles.empty}>
-            Tidak ada momen yang muat di durasi video ini.
-          </Text>
+          <View style={styles.emptyWrap}>
+            {assets.emptyState ? (
+              <Image
+                source={assets.emptyState}
+                style={styles.emptyImg}
+                resizeMode="contain"
+              />
+            ) : null}
+            <Text style={styles.empty}>
+              Tidak ada momen yang muat di durasi video ini.
+            </Text>
+          </View>
         }
         ListFooterComponent={
           <View style={styles.footer}>
@@ -375,9 +388,10 @@ export default function AIResultScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  list: { padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.huge },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    flex: { flex: 1 },
+    list: { padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.huge },
   steps: { marginBottom: spacing.xl },
   heroTitle: { ...type.display, color: colors.text },
   heroSub: { ...type.body, color: colors.textMuted, marginTop: spacing.xs, marginBottom: spacing.lg },
@@ -385,7 +399,9 @@ const styles = StyleSheet.create({
   bannerRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
   bannerText: { ...type.body, color: colors.text, flex: 1 },
   bannerBtn: { width: '100%' },
-  empty: { ...type.body, color: colors.textMuted, textAlign: 'center', marginTop: spacing.xl },
+    empty: { ...type.body, color: colors.textMuted, textAlign: 'center', marginTop: spacing.xl },
+    emptyWrap: { alignItems: 'center', paddingTop: spacing.xl },
+    emptyImg: { width: 168, height: 168, opacity: 0.9 },
   card: { gap: spacing.md },
   cardHead: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
   indexBubble: {
@@ -403,15 +419,15 @@ const styles = StyleSheet.create({
   titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
   title: { ...type.h2, color: colors.text, flex: 1 },
   metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  scoreWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(255, 107, 157, 0.12)',
-    paddingHorizontal: spacing.md,
-    paddingVertical: 5,
-    borderRadius: radius.pill,
-  },
+    scoreWrap: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      backgroundColor: withAlpha(colors.accent, 0.12),
+      paddingHorizontal: spacing.md,
+      paddingVertical: 5,
+      borderRadius: radius.pill,
+    },
   score: { ...type.mono, color: colors.accent },
   reason: { ...type.body, color: colors.textMuted },
   quoteBox: {

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../types/navigation';
-import { colors } from '../../theme/colors';
+import { useTheme } from '../../theme/ThemeContext';
+import type { ThemeColors } from '../../theme/themes';
 import { radius, spacing, type } from '../../theme/tokens';
 import { pickVideoFromLibrary } from '../../services/useVideoPicker';
 import Screen from '../../components/Screen';
@@ -16,6 +17,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'CustomVideoPicker'>;
 const STEPS = ['Video', 'Atur', 'Potong', 'Selesai'];
 
 export default function CustomVideoPickerScreen({ navigation }: Props) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [loading, setLoading] = useState(false);
 
   const handlePick = async () => {
@@ -69,8 +72,9 @@ export default function CustomVideoPickerScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  content: { paddingTop: spacing.lg },
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    content: { paddingTop: spacing.lg },
   steps: { marginBottom: spacing.xxl },
   hero: { alignItems: 'center', marginBottom: spacing.xl },
   iconBubble: {

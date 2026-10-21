@@ -1,6 +1,6 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { colors } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
 import { RootStackParamList } from '../types/navigation';
 
 import HomeScreen from '../screens/HomeScreen';
@@ -22,6 +22,7 @@ import CustomResultScreen from '../screens/custom/CustomResultScreen';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function AppNavigator() {
+  const { colors } = useTheme();
   return (
     <Stack.Navigator
       initialRouteName="Home"

@@ -1,19 +1,23 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   ScrollView,
   StyleSheet,
   StyleProp,
   ViewStyle,
+  Image,
 } from 'react-native';
-import { colors } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
+import type { ThemeColors } from '../theme/themes';
 import { spacing } from '../theme/tokens';
 
+type Styles = ReturnType<typeof createStyles>;
+
 /**
- * Cahaya ambient di belakang konten. Bukan gambar — cuma dua bidang ungu
- * transparan ber-blur lembut supaya layar terasa punya kedalaman, bukan flat.
+ * Cahaya ambient di belakang konten. Bukan gambar — cuma dua bidang transparan
+ * ber-blur lembut supaya layar terasa punya kedalaman, bukan flat.
  */
-function AmbientGlow() {
+function AmbientGlow({ styles }: { styles: Styles }) {
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
       <View style={[styles.glow, styles.glowTop]} />
@@ -21,6 +25,24 @@ function AmbientGlow() {
     </View>
   );
 }
+
+/**
+ * Tekstur latar opsional dari tema (mis. pola daun Konoha). Dipasang di atas
+ * warna latar dengan opacity rendah supaya tidak mengganggu keterbacaan.
+ */
+function BackgroundTexture() {
+  const { assets } = useTheme();
+  if (!assets.backgroundTexture) return null;
+  return (
+    <Image
+      source={assets.backgroundTexture}
+      style={[StyleSheet.absoluteFill, textureStyle]}
+      resizeMode="repeat"
+    />
+  );
+}
+
+const textureStyle = StyleSheet.create({ texture: { opacity: 0.08 } }).texture;
 
 type Props = {
   children: React.ReactNode;
@@ -42,11 +64,14 @@ export default function Screen({
   style,
   contentContainerStyle,
 }: Props) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const padding = padded ? { paddingHorizontal: spacing.lg } : null;
 
   return (
     <View style={[styles.root, style]}>
-      <AmbientGlow />
+      <BackgroundTexture />
+      <AmbientGlow styles={styles} />
       {scroll ? (
         <ScrollView
           style={styles.flex}
@@ -69,26 +94,28 @@ export default function Screen({
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
-  flex: { flex: 1 },
-  scrollContent: { paddingBottom: spacing.huge },
-  glow: {
-    position: 'absolute',
-    borderRadius: 9999,
-  },
-  glowTop: {
-    top: -140,
-    right: -120,
-    width: 320,
-    height: 320,
-    backgroundColor: colors.glowSoft,
-  },
-  glowBottom: {
-    bottom: -180,
-    left: -140,
-    width: 380,
-    height: 380,
-    backgroundColor: 'rgba(139, 92, 246, 0.07)',
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    root: { flex: 1, backgroundColor: colors.background },
+    flex: { flex: 1 },
+    scrollContent: { paddingBottom: spacing.huge },
+    glow: {
+      position: 'absolute',
+      borderRadius: 9999,
+    },
+    glowTop: {
+      top: -140,
+      right: -120,
+      width: 320,
+      height: 320,
+      backgroundColor: colors.glowSoft,
+    },
+    glowBottom: {
+      bottom: -180,
+      left: -140,
+      width: 380,
+      height: 380,
+      backgroundColor: colors.glowSoft,
+      opacity: 0.45,
+    },
+  });

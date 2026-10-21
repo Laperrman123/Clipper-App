@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { View, Text, Animated, StyleSheet, Easing } from 'react-native';
-import { colors } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
+import type { ThemeColors } from '../theme/themes';
 import { radius, spacing, type } from '../theme/tokens';
 
 type Props = {
@@ -17,6 +18,8 @@ export default function ProgressBar({
   label,
   showValue = true,
 }: Props) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const value = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -52,29 +55,30 @@ export default function ProgressBar({
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: { width: '100%' },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  label: { ...type.bodyStrong, color: colors.text, flex: 1, marginRight: spacing.md },
-  value: { ...type.mono, color: colors.primaryBright },
-  track: {
-    height: 8,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surfaceHi,
-    overflow: 'hidden',
-  },
-  fill: {
-    height: '100%',
-    borderRadius: radius.pill,
-    backgroundColor: colors.primary,
-    shadowColor: colors.primary,
-    shadowOpacity: 0.8,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 0 },
-  },
-});
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    wrap: { width: '100%' },
+    row: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing.sm,
+    },
+    label: { ...type.bodyStrong, color: colors.text, flex: 1, marginRight: spacing.md },
+    value: { ...type.mono, color: colors.primaryBright },
+    track: {
+      height: 8,
+      borderRadius: radius.pill,
+      backgroundColor: colors.surfaceHi,
+      overflow: 'hidden',
+    },
+    fill: {
+      height: '100%',
+      borderRadius: radius.pill,
+      backgroundColor: colors.primary,
+      shadowColor: colors.primary,
+      shadowOpacity: 0.8,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 0 },
+    },
+  });

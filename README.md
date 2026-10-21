@@ -12,6 +12,8 @@ autolinking RN CLI.
 
 ## Fitur
 
+- Dua tema bawaan: **Shinobi** (default, hijau daun & oranye chakra) dan
+  **Neon Purple** — bisa diganti seketika dari Settings tanpa restart.
 - Pilih beberapa rasio output: **9:16**, **1:1**, **16:9** (opsional crop ke rasio).
 - Manajemen banyak **API key Google AI Studio** (tambah/edit/hapus, pilih yang aktif).
 - Salin judul klip hasil analisis ke clipboard dengan sekali ketuk.
@@ -94,7 +96,10 @@ index.js                         # Registrasi AppRegistry ("POTONGIN")
 src/
   navigation/AppNavigator.tsx    # Definisi semua route
   types/navigation.ts            # Tipe param tiap screen (single source of truth)
-  theme/colors.ts, tokens.ts     # Palet & token desain (dark + electric purple)
+  theme/themes.ts                # Palet: Neon Purple & Shinobi (Naruto-style)
+  theme/ThemeContext.tsx         # Provider tema + useTheme() (persist ke Keychain)
+  theme/tokens.ts                # Spacing, radius, tipografi, glow()
+  assets/naruto/                 # Aset gambar tema Shinobi (lihat README di sana)
   utils/time.ts                  # Format waktu MM.SS
   components/                    # Screen, Button, Card, Chip, Badge, Toast, dll.
   screens/
